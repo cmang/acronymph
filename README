@@ -1,0 +1,36 @@
+This is an Acromania acronym game bot for IRC and SILC. This is old code I wrote back in 2008. I recently dug it up (in 2022) and added IRC support.
+
+For IRC, it uses the "irc" library from pypi. you can probably install it with the command:
+
+pip3 install irc
+
+Then run it with:
+./irc-bot.py <server[:port]> <channel> <nickname> <-ssl>
+
+If you  need your bot to register with nickserv, create a file called mysecrets.py containing the line:
+
+nickservRegString  = 'identify nick password'
+
+Old readme from the archive:
+
+Acronymph Acromania Bot for SILC
+--------------------------------
+
+This is an AcroMania bot for SILC (http://silcnet.org/).  It requires the Python SILC Toolkit bindings from http://www.liquidx.net/pysilc/ and the SILC Toolkit from http://silcnet.org/software/download/toolkit/.  Check your repositories.
+
+Usage:
+
+silc-bot.py <server> <nick> <username> <channel>
+
+Public commands to be ran in the channel:
+!help           - shows commands
+!startacro      - starts a game
+!stopacro       - stops a game
+!acrohelp       - explains the game to the user (not yet implemented)
+
+by Sam Foster (samfoster@gmail.com)
+
+Copyright 2008-2022.
+
+See LICENSE for licensing
+

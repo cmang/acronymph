@@ -4,6 +4,7 @@ Acromania engine, for communicating with chat protocols
 
 Talks to chat protocol class "chat" through:
 
+    # channel, nick and message are strings
     chat.send_channel_message(channel, message)
     chat.send_private_message(nick, message)
 
@@ -13,14 +14,7 @@ The chat protocol class can use it like this:
     mygame = acronymph.Game()
     g.start()
     g.end_game()
-
-
-self.g = game.game(channel, self)  # initialize "g" as game object
-self.g.start()  # Start the acromania game
-if self.g.running:
-    self.send_channel_message(channel, 'The game is already running.  Please finish this one or !stopacro before starting a new game.')
-
-
+    if g.running: print("The game is running!")
 
 """
 

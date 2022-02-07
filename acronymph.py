@@ -35,6 +35,19 @@ import time
 from random import randint
 
 
+class GameConfig:
+    def __init__(self):
+        self.rounds = 5     # number of rounds per game
+        self.acro_seconds = 90  # how many seconds people have to submit acronyms
+        self.vote_seconds = 60  # how many seconds people have to vote
+        self.time_between_rounds = 10
+
+    def loadConfig():
+        pass
+
+    def saveConfig():
+        pass
+
 class game:
 
     def __init__(self, channel, bot):
@@ -50,7 +63,8 @@ class game:
         self.takingvotes = False  # Are we waiting for people to vote?
         self.votinggrid = {}  # our grid for voting, number:nick
         self.hasvotted = []  # List of who has voted so far this round
-        self.numberofrounds = 5
+        # load config
+        self.config = GameConfig()
     
     def start(self):
         """If someone hits !start and the game is not yet running,
@@ -60,7 +74,7 @@ class game:
         self.round = 1  # starting at round 1
         self.running = True  # game on
 
-        self.bot.send_channel_message(self.channel, 'The game is starting and goes to ' + str(self.numberofrounds) + ' rounds.  You have 45 seconds to submit an acronym per round.  Submite your acronyms with /msg bot acronym.  Get ready!')
+        self.bot.send_channel_message(self.channel, 'The game is starting and goes to ' + str(self.config.rounds) + ' rounds.  You have ' + str(self.config.acro_seconds) + ' seconds to submit an acronym per round.  Submite your acronyms with /msg bot acronym.  Get ready!')
         self.startround()
 
     def startround(self):
@@ -76,9 +90,9 @@ class game:
         self.bot.send_channel_message(self.channel, 'Round #%i.  The acronym for this round is: %s' % (self.round, ''.join(self.acronym)))
         print("The acronym for round #%i is: " % self.round)
         print(self.acronym)
-        self.bot.send_channel_message(self.channel, "You have 50 seconds to submit an acronym using /msg bot <acro>.  Start now!")
-        self.t = threading.Timer(50, self.startvoting)  # Creating a timer thread to run startvoting() in 30 seconds
-        self.t2 = threading.Timer(35, self.tensecondwarning)  # create a timer to give a warning 10 seconds before the submissions are up
+        self.bot.send_channel_message(self.channel, "You have " + str(self.config.acro_seconds) + " seconds to submit an acronym using /msg bot <acro>.  Start now!")
+        self.t = threading.Timer(self.config.acro_seconds, self.startvoting)  # Creating a timer thread to run startvoting() in 30 seconds
+        self.t2 = threading.Timer(self.config.acro_seconds - 10, self.tensecondwarning)  # create a timer to give a warning 10 seconds before the submissions are up
         self.t.start()  # start the timer thread
         self.t2.start()  # start warning timer thread
         self.takingacros = True  # Let's start taking submissions for this round
@@ -87,8 +101,8 @@ class game:
 #            self.denial = self.denial + 5
 #            print "%i" % self.denial
 
-    def tensecondwarning(self):   # dumb little function to use with t2 Timer object in startround()
-        self.bot.send_channel_message(self.channel, '15 seconds left!')
+    def tensecondwarning(self):   # dumb little method to use with t2 Timer object in startround()
+        self.bot.send_channel_message(self.channel, '10 seconds left!')
 
     def startvoting(self):
         """Run this function when the entries are all in and we're going to start voting.
@@ -111,8 +125,8 @@ class game:
             self.bot.send_channel_message(self.channel, "#%i: %s" % (x, self.roundplayers[self.votinggrid[x]]))
         self.takingvotes = True  # We're now accepting votes
         print(self.roundplayers)  # self.roundplayers{} are our nick:acro entries
-        self.bot.send_channel_message(self.channel, "Please place your vote.  You have 40 seconds.")
-        self.t = threading.Timer(40, self.stopvoting)  # Create a timer thread to run stopvoting() in 40
+        self.bot.send_channel_message(self.channel, 'Please place your vote.  You have ' + str(self.config.vote_seconds) + ' seconds.')
+        self.t = threading.Timer(self.config.vote_seconds, self.stopvoting)  # Create a timer thread to control how long we have to vote
         self.t.start()
 
     def stopvoting(self):
@@ -142,7 +156,7 @@ class game:
             else:
                self.bot.send_channel_message(self.channel, "But %s didn't vote, so they receive 0 points this round." % names)
 #            self.bot.send_channel_message(self.channel, "%s's acronym %s received %i votes." % nick acro votes)
-        if self.round < self.numberofrounds:  # after x rounds we end the game
+        if self.round < self.config.rounds:  # after x rounds we end the game
             print("Total points: ")
             print(self.points) # self.points{} is our nick:points for the game
             # start proper scoreboard
@@ -151,7 +165,8 @@ class game:
                 self.bot.send_channel_message(self.channel, "%s: %i" % (names, self.points[names]))
             # stop scoreboard
             self.round = self.round + 1
-            self.t = threading.Timer(10, self.startround) # create a timer to start the next round in 10
+            self.bot.send_channel_message(self.channel, "The next round starts in %i seconds. Get ready!" % self.config.time_between_rounds)
+            self.t = threading.Timer(self.config.time_between_rounds, self.startround) # create a timer to start the next round in 10
             self.t.start()
         else:
             self.endgame()  # If we're on the final round, time to end the game.

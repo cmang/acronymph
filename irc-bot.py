@@ -82,12 +82,12 @@ class Bot(irc.bot.SingleServerIRCBot):
         msg = e.arguments[0]
         if self.g.running:  # Is the game running?  If so...
             if self.g.takingacros:  # Are we waiting for submissions?
-                self.g.takeacro(sender, msg)  # pass nick/submission to handler
+                self.g.take_acro(sender, msg)  # pass nick/submission to handler
             elif self.g.takingvotes:  # Are we waiting for votes instead?
-                self.g.takevote(sender, msg)  # pass nick/vote to handler
+                self.g.take_vote(sender, msg)  # pass nick/vote to handler
             else:  # We must be inbetween rounds...
                 self.send_private_message(sender, 'Voting is over.  Please wait for the next round to begin.')
-        else: self.send_private_message(sender, 'The game is currently not running.')  # Note to self: replace this string with aolsay() later
+        else: self.send_private_message(sender, 'The game is currently not running.') 
 
         #self.do_command(e, e.arguments[0])
 
@@ -161,7 +161,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                     if self.g.running:
                         self.send_channel_message(channel, 'The game is already running.  Please finish this one or !stopacro before starting a new game.')
                     else:
-                        self.g = acronymph.game(channel, self)  # initialize "g" as game object
+                        self.g = acronymph.Game(channel, self)  # initialize "g" as game object
                         self.g.start()  # Start the acromania game
                 except AttributeError:
                     self.g = acronymph.game(channel, self)  # initialize "g" as game object
@@ -169,7 +169,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         elif cmd == "!stopacro":
                 try:
                     if self.g.running:
-                        self.g.endgame()
+                        self.g.end_game()
                     else:
                         self.send_channel_message(channel, 'The game is not running.')
                 except AttributeError:

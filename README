@@ -1,3 +1,17 @@
+Acronymph Acromania Bot for SILC
+--------------------------------
+
+Acronymph is an acronym game bot for IRC. The game has different names, including Acromania and Acrophiba and simply "The Acronym Game." 
+
+Usage:
+
+./irc-bot.py <server> <nick> <username> <channel>
+
+Public commands to be ran in the channel:
+!help           - shows commands
+!startacro      - starts a game
+!stopacro       - stops a game
+!acrohelp       - explains the game to the user (not yet implemented)
 This is an Acromania acronym game bot for IRC and SILC. This is old code I wrote back in 2008. I recently dug it up (in 2022) and added IRC support.
 
 For IRC, it uses the "irc" library from pypi. you can probably install it with the command:
@@ -11,26 +25,35 @@ If you  need your bot to register with nickserv, create a file called mysecrets.
 
 nickservRegString  = 'identify nick password'
 
-Old readme from the archive:
+Example game:
 
-Acronymph Acromania Bot for SILC
---------------------------------
+<player1> !startacro
+<acrobot> Welcome to haxroMania.  For game instructions type !acrohelp
+<acrobot> The game is starting. You have 30 seconds per round.
+<acrobot> Round #1: The current acronym is: WTYM
+(player1>acrobot) word to your mother
+<acrobot> Acronym #1 accepted!
+(player2>acrobot) whats the yonkel, man?
+<acrobot> Acronym #2 accepted!
+(player3>acrobot) Windows trashes your memory
+<acrobot> Acronym #3 accepted!
+<acrobot> Time's up! Here are the results:
+<acrobot> #1: whats the yonkel, man?
+<acrobot> #2: word to your mother
+<acrobot> #3: Windows trashes your memory
+<acrobot> Plase vote for your favorite with /msg acrobot vote #.  
+<acrobot> vote #1 received
+<acrobot> vote #2 received
+<acrobot> 10 seconds left...
+<acrobot> vote #3 received
+<acrobot> All the votes are in! results:
+<acrobot> player1's acronym: "word to your mother" received 1 votes
+<acrobot> player2's acronym: "whats the yonkel, man?" received 0 votes
+<acrobot> player3's acronym: "Windows trashes your memory" received 2 votes
+<acrobot> Scoreboard:  player1: 1, player2: 0, player3: 2
+<acrobot> The next round starts in 15 seconds.  Get ready
 
-This is an AcroMania bot for SILC (http://silcnet.org/).  It requires the Python SILC Toolkit bindings from http://www.liquidx.net/pysilc/ and the SILC Toolkit from http://silcnet.org/software/download/toolkit/.  Check your repositories.
-
-Usage:
-
-silc-bot.py <server> <nick> <username> <channel>
-
-Public commands to be ran in the channel:
-!help           - shows commands
-!startacro      - starts a game
-!stopacro       - stops a game
-!acrohelp       - explains the game to the user (not yet implemented)
-
-by Sam Foster (samfoster@gmail.com)
-
-Copyright 2008-2022.
+Copyright 2008,2022 Sam Foster <samfoster@gmail.com>
 
 See LICENSE for licensing
 

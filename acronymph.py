@@ -1,31 +1,27 @@
 #!/usr/bin/python
-"""The Acronym Game (Haxromania)
+"""
+Acromania engine, for communicating with chat protocols
 
-<player1> !startacro
-<acrobot> Welcome to haxroMania.  For game instructions type !acrohelp
-<acrobot> The game is starting. You have 30 seconds per round.
-<acrobot> Round #1: The current acronym is: WTYM
-(player1>acrobot) word to your mother
-<acrobot> Acronym #1 accepted!
-(player2>acrobot) whats the yonkel, man?
-<acrobot> Acronym #2 accepted!
-(player3>acrobot) Windows trashes your memory
-<acrobot> Acronym #3 accepted!
-<acrobot> Time's up! Here are the results:
-<acrobot> #1: whats the yonkel, man?
-<acrobot> #2: word to your mother
-<acrobot> #3: Windows trashes your memory
-<acrobot> Plase vote for your favorite with /msg acrobot vote #.  
-<acrobot> vote #1 received
-<acrobot> vote #2 received
-<acrobot> 10 seconds left...
-<acrobot> vote #3 received
-<acrobot> All the votes are in! results:
-<acrobot> player1's acronym: "word to your mother" received 1 votes
-<acrobot> player2's acronym: "whats the yonkel, man?" received 0 votes
-<acrobot> player3's acronym: "Windows trashes your memory" received 2 votes
-<acrobot> Scoreboard:  player1: 1, player2: 0, player3: 2
-<acrobot> The next round starts in 15 seconds.  Get ready
+Talks to chat protocol class "chat" through:
+
+    chat.send_channel_message(channel, message)
+    chat.send_private_message(nick, message)
+
+Receives messages from chat protocol class:
+The chat protocol class can use it like this:
+
+    mygame = acronymph.Game()
+    g.start()
+    g.end_game()
+
+
+self.g = game.game(channel, self)  # initialize "g" as game object
+self.g.start()  # Start the acromania game
+if self.g.running:
+    self.send_channel_message(channel, 'The game is already running.  Please finish this one or !stopacro before starting a new game.')
+
+
+
 """
 
 import string
@@ -48,7 +44,7 @@ class GameConfig:
     def saveConfig():
         pass
 
-class game:
+class Game:
 
     def __init__(self, channel, bot):
         self.bot = bot  # set game.bot to the silc object
@@ -74,37 +70,33 @@ class game:
         self.round = 1  # starting at round 1
         self.running = True  # game on
 
-        self.bot.send_channel_message(self.channel, 'The game is starting and goes to ' + str(self.config.rounds) + ' rounds.  You have ' + str(self.config.acro_seconds) + ' seconds to submit an acronym per round.  Submite your acronyms with /msg bot acronym.  Get ready!')
-        self.startround()
+        self.bot.send_channel_message(self.channel, 'The game is starting and goes to ' + str(self.config.rounds) + ' rounds.  You have ' + str(self.config.acro_seconds) + ' seconds to submit an acronym per round.  Submit your acronyms with /msg bot acronym.  Get ready!')
+        self.start_round()
 
-    def startround(self):
+    def start_round(self):
         """Start a round
         """
         self.roundplayers = {}  # clear out the list of players/acros from last round
         self.votes = {}  # clear out the list of players/votes from last round
         self.hasvoted = []  # Clear out list of who has voted for the round
         self.acronym = None
-        self.acronym = self.makeacro()  # make the acronym for this round
+        self.acronym = self.make_acro()  # make the acronym for this round
         print(self.acronym)
         print()
         self.bot.send_channel_message(self.channel, 'Round #%i.  The acronym for this round is: %s' % (self.round, ''.join(self.acronym)))
         print("The acronym for round #%i is: " % self.round)
         print(self.acronym)
         self.bot.send_channel_message(self.channel, "You have " + str(self.config.acro_seconds) + " seconds to submit an acronym using /msg bot <acro>.  Start now!")
-        self.t = threading.Timer(self.config.acro_seconds, self.startvoting)  # Creating a timer thread to run startvoting() in 30 seconds
-        self.t2 = threading.Timer(self.config.acro_seconds - 10, self.tensecondwarning)  # create a timer to give a warning 10 seconds before the submissions are up
+        self.t = threading.Timer(self.config.acro_seconds, self.start_voting)  # Creating a timer thread to run start_voting() in 30 seconds
+        self.t2 = threading.Timer(self.config.acro_seconds - 10, self.ten_second_warning)  # create a timer to give a warning 10 seconds before the submissions are up
         self.t.start()  # start the timer thread
         self.t2.start()  # start warning timer thread
         self.takingacros = True  # Let's start taking submissions for this round
-#        for self.denial in 20:
-#            time.sleep(5)
-#            self.denial = self.denial + 5
-#            print "%i" % self.denial
 
-    def tensecondwarning(self):   # dumb little method to use with t2 Timer object in startround()
+    def ten_second_warning(self):   # dumb little method to use with t2 Timer object in start_round()
         self.bot.send_channel_message(self.channel, '10 seconds left!')
 
-    def startvoting(self):
+    def start_voting(self):
         """Run this function when the entries are all in and we're going to start voting.
         """
         self.takingacros = False  # We're no longer accepting entries.
@@ -126,10 +118,10 @@ class game:
         self.takingvotes = True  # We're now accepting votes
         print(self.roundplayers)  # self.roundplayers{} are our nick:acro entries
         self.bot.send_channel_message(self.channel, 'Please place your vote.  You have ' + str(self.config.vote_seconds) + ' seconds.')
-        self.t = threading.Timer(self.config.vote_seconds, self.stopvoting)  # Create a timer thread to control how long we have to vote
+        self.t = threading.Timer(self.config.vote_seconds, self.stop_voting)  # Create a timer thread to control how long we have to vote
         self.t.start()
 
-    def stopvoting(self):
+    def stop_voting(self):
         """Run this when the time is up for voting.  This basically
         wraps up the round and sets us up for the next round.
         """
@@ -154,8 +146,7 @@ class game:
             if names in self.hasvoted:
                 pass
             else:
-               self.bot.send_channel_message(self.channel, "But %s didn't vote, so they receive 0 points this round." % names)
-#            self.bot.send_channel_message(self.channel, "%s's acronym %s received %i votes." % nick acro votes)
+                self.bot.send_channel_message(self.channel, "But %s didn't vote, so they receive 0 points this round." % names)
         if self.round < self.config.rounds:  # after x rounds we end the game
             print("Total points: ")
             print(self.points) # self.points{} is our nick:points for the game
@@ -166,16 +157,16 @@ class game:
             # stop scoreboard
             self.round = self.round + 1
             self.bot.send_channel_message(self.channel, "The next round starts in %i seconds. Get ready!" % self.config.time_between_rounds)
-            self.t = threading.Timer(self.config.time_between_rounds, self.startround) # create a timer to start the next round in 10
+            self.t = threading.Timer(self.config.time_between_rounds, self.start_round) # create a timer to start the next round in 10
             self.t.start()
         else:
-            self.endgame()  # If we're on the final round, time to end the game.
+            self.end_game()  # If we're on the final round, time to end the game.
 
-    def makeacro(self):
+    def make_acro(self):
         """Returns a list object to describe the acronym, of random
         length between 3 and MAXACRO
         """
-#        alphabet = [char for char in string.ascii_uppercase]
+        #alphabet = [char for char in string.ascii_uppercase]   # If you want a non-weighted alphabet
         # add weight to the alphabet to prevent excessive Z Q and Xs
         alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'A', 'B', 'C', 'D', 'E', 'E', 'F', 'G', 'H', 'I', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'O', 'P', 'R', 'S', 'T', 'U', 'W', 'Y'] # weight
         acrolen = randint(4, 6)
@@ -184,13 +175,13 @@ class game:
             acro.append(alphabet[randint(0, len(alphabet) -1)])
         return acro
 
-    def takeacro(self, nick, message):
+    def take_acro(self, nick, message):
         """When self.takingacros is True, we want to take a submission.
         Test to see if it's a good acronym, check and see if they've already
         submitted an answer.  Add the answer if it's good and they haven't,
         change it if they already have an answer.
         """
-        if self.testacro(message, self.acronym):  # Does this acronym pass the test?
+        if self.test_acro(message, self.acronym):  # Good acronym?
             # Check to see if user has voted already, if so, change answer. If not, accept it.
             if nick in self.roundplayers:
                 self.bot.send_private_message(nick, 'Your acronym has been changed to: %s' % message)
@@ -199,13 +190,12 @@ class game:
                 self.bot.send_private_message(nick, 'Acronym accepted. Thank you.')
                 self.bot.send_channel_message(self.channel, "Acronym received.")
             self.roundplayers[nick] = message
-            # send to channel, "Vote #_ received!"
         else:
             self.bot.send_private_message(nick, 'Acronym rejected.')
             pass
 
-    def takevote(self, nick, message):
-        """When self.takingvotes is true and it's time to vote, take votes
+    def take_vote(self, nick, message):
+        """ When self.takingvotes is true and it's time to vote, take votes
         and add them into self.votes
         """ 
         print(nick, message)
@@ -214,9 +204,7 @@ class game:
         except ValueError:  # If this fails, the vote is not valid.
             vote = None
             print("Vote rejected.")
-            self.bot.send_private_message(nick, 'Invalid vote.')
-        # next we need to see if vote (int) matches a key in self.votinggrid{} 
-#        if self.votinggrid.has_key(vote):  # If the vote matches the ballot, accept the vote
+            #self.bot.send_private_message(nick, 'Invalid vote.')
         if vote in self.votinggrid:  # same as above commented line
             # Right here we need to check and see if the person has voted before before accepting.
             # No duplicate votes
@@ -227,16 +215,14 @@ class game:
                 self.bot.send_private_message(nick, 'You cannot vote for yourself.')
             else:
                 # accept the vote - and add to list self.hasvoted[]
-                # print "Vote has been accepted for #%i.  Thanks!" % vote
                 self.votes[self.votinggrid[vote]] = self.votes[self.votinggrid[vote]] + 1 # add a round point
                 self.bot.send_private_message(nick, 'Your vote is for #%i.  Thanks for voting!' % vote)
                 self.hasvoted.append(nick)  # add name to self.hasvoted list
                 self.bot.send_channel_message(self.channel, "Vote received.")
-#            self.bot.send_private_message(nick, 'thanks for voting.')
         else:  # If it's an integer but outside of the range of valid votes, don't count the vote.
             self.bot.send_private_message(nick, 'Invalid vote.')
 
-    def testacro(self, useracro, gameacro):
+    def test_acro(self, useracro, gameacro):
         """Returns True if acro is acceptable,
         False if not
         """
@@ -245,20 +231,18 @@ class game:
             acrolist[i - 1] = acrolist[i - 1][0].capitalize()
         return acrolist == gameacro
 
-    def endgame(self):
+    def end_game(self):
         """This function is run either at the end of the last round,
         or if a game is canceled by a user
         """
         self.t.cancel()  # End any potentially running timer threads
         self.t2.cancel()  
         self.bot.send_channel_message(self.channel, "The game is over!  Final scores are: ")
-        # print self.points  # self.points{} is our nick:score dict for the game
-        # self.bot.send_channel_message(self.channel, "Total scores:")
+        time.sleep(1)
+        print(self.points)  # self.points{} is our nick:score dict for the game
         for names in self.points:
             self.bot.send_channel_message(self.channel, "%s: %i" % (names, self.points[names]))
+            time.sleep(1)
         self.bot.send_channel_message(self.channel, "Congratulations to the winner.")
         self.running = False
-
-# g = game('#kgb')
-# g.start()
 

@@ -1,7 +1,7 @@
 Acronymph Acromania Bot for IRC 
 -------------------------------
 
-Acronymph is an acronym game bot for IRC. The game has different names, including Acromania and Acrophiba and simply "The Acronym Game." 
+Acronymph is an acronym game bot for IRC. The game has different names, including Acromania, Acrophiba and simply "The Acronym Game." 
 
 For IRC, it uses the "irc" library from pypi. you can probably install it with the command:
 

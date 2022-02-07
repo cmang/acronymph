@@ -1,7 +1,11 @@
-Acronymph Acromania Bot for SILC
---------------------------------
+Acronymph Acromania Bot for IRC 
+-------------------------------
 
 Acronymph is an acronym game bot for IRC. The game has different names, including Acromania and Acrophiba and simply "The Acronym Game." 
+
+For IRC, it uses the "irc" library from pypi. you can probably install it with the command:
+
+pip3 install irc
 
 Usage:
 
@@ -12,11 +16,6 @@ Public commands to be ran in the channel:
 !startacro      - starts a game
 !stopacro       - stops a game
 !acrohelp       - explains the game to the user (not yet implemented)
-This is an Acromania acronym game bot for IRC and SILC. This is old code I wrote back in 2008. I recently dug it up (in 2022) and added IRC support.
-
-For IRC, it uses the "irc" library from pypi. you can probably install it with the command:
-
-pip3 install irc
 
 Then run it with:
 ./irc-bot.py <server[:port]> <channel> <nickname> <-ssl>
